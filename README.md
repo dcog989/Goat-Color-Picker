@@ -2,7 +2,7 @@
 
 Probably the greatest color picker of all time
 
-![Screenshot 2025-06-05 163944](https://github.com/user-attachments/assets/753b8bbd-9602-435e-b694-de19ae3d5ad8)
+![Screenshot 2025-06-05 170032](https://github.com/user-attachments/assets/932e910f-8c7f-4fc4-b13c-85cc18adcd15)
 
 ## Get it here
 
