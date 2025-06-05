@@ -1,0 +1,729 @@
+/* ==========================================================================
+    1. Global Variables & Root Styles
+   ========================================================================== */
+
+:root {
+    /* Layout & Sizing */
+    --global-border-radius: 6px;
+    --panel-padding: 20px;
+    --swatch-size: 45px;
+    --control-panel-width: 580px;
+    --side-panel-width: 300px;
+
+    /* Core Color Palette */
+    --text-default: hsl(0, 0%, 94%);
+    --text-secondary: hsl(0, 0%, 80%);
+    --text-tertiary: hsl(0, 0%, 70%);
+    --text-dark: hsl(0, 0%, 10%);
+    --text-highlight-on-dark: hsl(0, 0%, 90%); /* For text on dark animated buttons */
+    --text-highlight-on-light: hsl(0, 0%, 10%); /* For text on light animated buttons (not currently used by animation) */
+
+    --bg-panel: #282828;
+    --bg-input-field: #3a3a3a;
+    --bg-slider-track: #4a4a4a;
+    --bg-output-panel: hsl(0, 0%, 0%, 0.3);
+    --bg-swatch-empty: #444;
+    --bg-slider-thumb: #999;
+
+    --text-block-letter-on-dark: var(--text-highlight-on-dark);
+    --text-block-letter-on-light: var(--text-dark);
+
+    /* Borders */
+    --border-color-default: #555;
+    --border-color-strong: #777;
+    --border-color-interactive-focus: purple;
+    --border-color-input-range: hsl(0, 0%, 0%, 0.2);
+    --border-color-thumb: #333;
+
+    /* Shadows */
+    --shadow-default: hsl(0, 0%, 0%, 0.3);
+    --shadow-panel: 0 5px 15px hsl(0, 0%, 0%, 0.3);
+    --shadow-interactive-focus: 0 0 8px hsl(271, 76%, 53%, 0.5);
+
+    /* Button Specifics */
+    --button-bg-default: #555555; /* Fallback for animated buttons if color is invalid */
+    --button-bg-disabled: #404040;
+    --button-text-disabled: #888;
+    --button-animation-duration: 8s;
+
+    /* Bin Specifics */
+    --bin-border-color-default: var(--border-color-strong);
+    --bin-border-color-drag-over: red;
+    --bin-border-color-pending-clear: orange;
+    --bin-icon-color-default: var(--border-color-strong);
+    --bin-icon-color-drag-over: red;
+    --bin-icon-color-pending-clear: orange;
+    --bin-bg-drag-over: hsl(0 100% 50% / 0.2);
+
+    /* Checkerboard Pattern (HTML Background & Opacity Slider) */
+    --checkerboard-html-color1: #404040;
+    --checkerboard-html-color2: #383838;
+    --checkerboard-html-size: 20px;
+    --checkerboard-html-offset: 10px;
+
+    --checkerboard-slider-color1: #666;
+    --checkerboard-slider-color2: #555;
+    --checkerboard-slider-size: 10px; /* Size of each square in the checkerboard */
+    --checkerboard-slider-offset: 5px; /* Offset for the second layer of checkerboard for slider */
+
+    /* Base HSL components for CSS animations, to be set by JavaScript */
+    --animation-base-hue: 0deg;
+    --animation-base-saturation: 0%;
+    --animation-base-lightness: 30%;
+
+
+    --slider-label-width: 70px; /* For HSL, RGB, etc. labels */
+    --slider-thumb-bg-color: var(--bg-slider-thumb);
+    --slider-thumb-border-color: var(--border-color-thumb);
+    --slider-thumb-border-radius: 4px;
+    --slider-thumb-height: calc(var(--slider-track-height) + 8px);
+    --slider-thumb-width: 12px;
+    --slider-track-height: 28px;
+    --slider-value-input-width: 40px; /* For HSL, RGB, etc. numeric inputs */
+}
+
+@property --block-letter-animated-saturation {
+    syntax: "<percentage>";
+    inherits: false;
+    initial-value: 35%;
+}
+
+@property --button-animated-lightness {
+    syntax: "<percentage>";
+    inherits: false;
+    initial-value: 15%;
+}
+
+@property --animation-base-lightness {
+    /* Removed duplicate definition */
+    syntax: "<percentage>";
+    inherits: false;
+    initial-value: 30%;
+}
+
+@property --animation-base-saturation {
+    /* Removed duplicate definition */
+    syntax: "<percentage>";
+    inherits: false;
+    initial-value: 0%;
+}
+
+/* ==========================================================================
+    2. Base HTML & Body Styles
+   ========================================================================== */
+
+html {
+    background-image: repeating-linear-gradient(45deg, var(--checkerboard-html-color1) 25%, transparent 25%, transparent 75%, var(--checkerboard-html-color1) 75%, var(--checkerboard-html-color1)), repeating-linear-gradient(45deg, var(--checkerboard-html-color1) 25%, var(--checkerboard-html-color2) 25%, var(--checkerboard-html-color2) 75%, var(--checkerboard-html-color1) 75%, var(--checkerboard-html-color1));
+    background-position: 0 0, var(--checkerboard-html-offset) var(--checkerboard-html-offset);
+    background-size: var(--checkerboard-html-size) var(--checkerboard-html-size);
+    min-height: 100vh;
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    transition: --animation-base-hue 1.2s ease-out, --animation-base-lightness 1.2s ease-out, --animation-base-saturation 1.2s ease-out;
+}
+
+body {
+    color: var(--text-default);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+    transition: background-color 0.8s ease-out;
+}
+
+/* ==========================================================================
+    3. Typography & Header
+   ========================================================================== */
+
+h1#mainHeader {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.9em;
+    font-weight: bold;
+    letter-spacing: 1px;
+    line-height: 1.5;
+}
+
+.block-letter {
+    animation: cycleBlockLetterSaturation var(--button-animation-duration) infinite alternate ease-in-out;
+    background-color: hsl(var(--animation-base-hue), var(--block-letter-animated-saturation), var(--animation-base-lightness), 0.5);
+    border-radius: var(--global-border-radius);
+    box-shadow: 1px 1px 3px var(--shadow-default);
+    color: var(--text-block-letter-on-light); /* JS will adjust */
+    display: inline-block;
+    font-weight: bold;
+    line-height: 1.1;
+    margin: 0.05em 0.1em;
+    min-width: 1em;
+    padding: 0.15em 0.35em;
+    text-align: center;
+    text-transform: uppercase;
+    transition: color 0.8s ease-in-out;
+    user-select: none;
+    vertical-align: middle;
+}
+
+@keyframes cycleBlockLetterSaturation {
+    from {
+        --block-letter-animated-saturation: 35%;
+    }
+    to {
+        --block-letter-animated-saturation: 85%;
+    }
+}
+
+/* ==========================================================================
+    4. Main Layout Wrappers & Panels
+   ========================================================================== */
+
+.main-content-wrapper {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    gap: 25px;
+    align-items: flex-start;
+    justify-content: center;
+    max-width: 1100px;
+    width: 100%;
+}
+
+#controlPanel {
+    width: var(--control-panel-width);
+    min-width: 300px; /* Minimum width for control panel */
+    flex-shrink: 0;
+}
+
+.side-panels-column {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    width: var(--side-panel-width);
+    min-width: 280px; /* Minimum width for side panels */
+    flex-shrink: 0;
+}
+
+#controlPanel,
+#colorTheoryPanel,
+#paintboxPanel {
+    background-color: var(--bg-panel);
+    padding: var(--panel-padding);
+    border-radius: var(--global-border-radius);
+    box-shadow: var(--shadow-panel);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    box-sizing: border-box;
+}
+
+#colorTheoryPanel h2,
+#paintboxPanel h2 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: var(--text-secondary);
+    font-size: 1.2em;
+    text-align: center;
+}
+
+/* ==========================================================================
+    5. Interactive Elements: Buttons, Selects, Swatches
+   ========================================================================== */
+
+.animated-button,
+.copy-btn {
+    /* Base styles for buttons */
+    padding: 7px 12px;
+    color: var(--text-default);
+    border: 1px solid var(--border-color-strong);
+    border-radius: var(--global-border-radius);
+    cursor: pointer;
+    font-size: 0.8em;
+    text-align: center;
+    user-select: none;
+    transition: filter 0.8s ease-out, background-color 0.8s, color 0.8s;
+}
+
+.animated-button {
+    /* Specifics for animated buttons */
+    background-color: hsl(var(--animation-base-hue), 90%, var(--button-animated-lightness));
+    color: var(--text-highlight-on-dark);
+    animation: cycleButtonLightness var(--button-animation-duration) infinite alternate ease-in-out;
+}
+
+@keyframes cycleButtonLightness {
+    from {
+        --button-animated-lightness: 15%;
+    }
+    to {
+        --button-animated-lightness: 25%;
+    }
+}
+
+.animated-button:hover:not(:disabled),
+.copy-btn:hover:not(:disabled) {
+    filter: brightness(1.15);
+}
+
+.animated-button:disabled,
+.copy-btn:disabled {
+    background-color: var(--button-bg-disabled) !important; /* !important to ensure override of animated bg */
+    color: var(--button-text-disabled) !important;
+    cursor: not-allowed;
+    filter: grayscale(50%);
+    opacity: 0.7;
+    animation: none !important; /* Stop animation on disabled */
+}
+
+.animated-button.flash-red {
+    animation: flashRedWarning 0.5s 3; /* Overrides cycleButtonLightness temporarily */
+}
+
+@keyframes flashRedWarning {
+    0%,
+    100% {
+        background-color: red !important; /* !important to ensure override */
+        color: var(--text-highlight-on-dark) !important;
+    }
+    50% {
+        /* Mid-state can revert to its original animated color or a specific color */
+        /* Default animated color will be used if not specified due to animation property */
+    }
+}
+
+.theory-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+    align-items: center;
+}
+
+.theory-controls select {
+    padding: 7px 9px;
+    background-color: var(--bg-input-field);
+    border: 1px solid var(--border-color-default);
+    border-radius: var(--global-border-radius);
+    color: hsl(0, 0%, 88%);
+    font-size: 0.85em;
+    width: fit-content;
+}
+
+#copyTheoryToPaintboxBtn {
+    margin-top: 8px;
+    align-self: center;
+    width: auto;
+    display: inline-block;
+}
+
+#paletteSwatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    min-height: var(--swatch-size); /* Ensure container has height even when empty */
+}
+.palette-message {
+    color: var(--text-tertiary);
+    text-align: center;
+    width: 100%;
+    font-style: italic;
+}
+
+.swatch,
+.paintbox-swatch,
+#mainColorDraggable {
+    /* Base styles for all swatch-like elements */
+    width: var(--swatch-size);
+    height: var(--swatch-size);
+    border-radius: var(--global-border-radius);
+    border: 1px solid hsl(0, 0%, 100%, 0.1);
+    cursor: grab;
+    transition: transform 0.6s ease-out, box-shadow 0.4s ease-out, background-color 0.8s ease-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6em;
+    color: transparent; /* Text shown on hover */
+    overflow: hidden;
+    text-align: center;
+    user-select: none;
+}
+
+#mainColorDraggable {
+    transition: background-color 0.6s ease-out;
+    width: 64px;
+}
+
+.swatch:hover,
+.paintbox-swatch:hover,
+#mainColorDraggable:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 6px var(--shadow-default);
+    color: var(--text-default); /* Show text on hover */
+    text-shadow: 0 0 2px black, 0 0 2px black; /* Improve text visibility on diverse backgrounds */
+}
+
+.dragging {
+    opacity: 0.5;
+    border: 2px dashed #ccc !important; /* Use !important to override other border styles during drag */
+    transform: scale(0.95); /* Slightly shrink dragged item */
+}
+
+#colorInput.drag-over-main-target,
+#mainColorDraggable.drag-over-main-target {
+    outline: 2px dashed var(--border-color-interactive-focus);
+    outline-offset: 2px;
+    box-shadow: var(--shadow-interactive-focus);
+}
+
+.paintbox-swatch.drag-over {
+    border: 2px dashed var(--border-color-interactive-focus) !important; /* Ensure override */
+    background-color: hsla(271, 76%, 53%, 0.1); /* Visual cue for droppable area */
+}
+
+/* ==========================================================================
+    6. Paintbox Specific Styles
+   ========================================================================== */
+
+#paintboxGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--swatch-size), 1fr)); /* Responsive columns */
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.paintbox-swatch {
+    width: auto; /* Let grid control width */
+    aspect-ratio: 1 / 1; /* Maintain square shape */
+}
+
+#paintboxControls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+#exportPaintboxBtn {
+    flex-grow: 1;
+    font-size: 0.9em;
+}
+
+#paintboxBin {
+    width: calc(var(--swatch-size) + 5px);
+    height: calc(var(--swatch-size) + 5px);
+    border: 2px dashed var(--bin-border-color-default);
+    border-radius: var(--global-border-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bin-icon-color-default);
+    cursor: default; /* Not draggable itself */
+    transition: background-color 0.6s, border-color 0.6s, color 0.6s;
+}
+
+#paintboxBin svg {
+    width: 60%;
+    height: 60%;
+    fill: currentColor;
+}
+
+#paintboxBin.drag-over-bin {
+    background-color: var(--bin-bg-drag-over);
+    border-color: var(--bin-border-color-drag-over);
+    color: var(--bin-icon-color-drag-over);
+}
+
+#paintboxBin.pending-clear {
+    border-color: var(--bin-border-color-pending-clear) !important; /* Ensure override */
+    color: var(--bin-icon-color-pending-clear) !important;
+}
+
+.bin-click-notification {
+    position: absolute;
+    background-color: #222;
+    color: var(--text-default);
+    padding: 10px 15px;
+    border-radius: var(--global-border-radius);
+    box-shadow: 0 4px 12px hsl(0, 0%, 0%, 0.6);
+    z-index: 1001;
+    font-size: 0.9em;
+    font-weight: 500;
+    pointer-events: none;
+    white-space: nowrap;
+    border: 1px solid #444;
+    transform: translateX(-50%);
+    animation: fadeInBinNotification 0.4s ease-out;
+    text-align: center;
+}
+
+@keyframes fadeInBinNotification {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+/* ==========================================================================
+    7. Form Controls: Text Inputs, Sliders
+   ========================================================================== */
+
+.color-input-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.color-input-container label {
+    font-size: 1em;
+    color: var(--text-secondary);
+    font-weight: normal;
+    flex-shrink: 0;
+}
+
+.color-input-container input[type="text"] {
+    flex-grow: 1;
+    padding: 8px 10px;
+    background-color: var(--bg-input-field);
+    border: 1px solid var(--border-color-default);
+    border-radius: var(--global-border-radius);
+    color: var(--text-default);
+    font-size: 0.9em;
+    box-sizing: border-box;
+    transition: border-color 0.6s, box-shadow 0.6s, background-color 0.6s;
+}
+
+.color-input-container input[type="text"].input-invalid {
+    border-color: hsl(0, 90%, 65%);
+    box-shadow: 0 0 0 3px hsl(0, 90%, 65%, 0.3), 0 0 8px hsl(0, 75%, 60%, 0.5) inset;
+    background-color: hsl(0, 100%, 95%, 0.08);
+    outline: 2px solid transparent; /* Prevents default browser outline from clashing */
+    animation: pulseInvalidInput 1.5s infinite ease-in-out;
+}
+
+.color-input-container input[type="text"].input-invalid:focus {
+    border-color: hsl(0, 95%, 55%);
+    box-shadow: 0 0 0 3px hsl(0, 95%, 55%, 0.4), 0 0 10px hsl(0, 80%, 50%, 0.6) inset;
+    animation: none; /* Stop pulsing on focus to allow user to correct */
+}
+
+#mainColorDraggable {
+    /* Already styled with other swatches, specific margin */
+    margin-left: 5px;
+    flex-shrink: 0;
+}
+
+.slider-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.slider-container label {
+    width: var(--slider-label-width);
+    flex-shrink: 0;
+    margin-right: 5px;
+    font-size: 1em;
+    color: var(--text-secondary);
+    box-sizing: border-box;
+}
+
+.slider-container input[type="range"] {
+    flex-grow: 1;
+    flex-basis: 150px;
+    min-width: 100px;
+    margin-right: 10px; /* Spacing before numeric input */
+}
+
+.slider-container .value-input {
+    width: var(--slider-value-input-width);
+    min-width: var(--slider-value-input-width); /* Prevent shrinking */
+    max-width: var(--slider-value-input-width); /* Prevent growing */
+    padding: 4px 6px;
+    background-color: var(--bg-input-field);
+    border: 1px solid var(--border-color-default);
+    border-radius: calc(var(--global-border-radius) - 2px);
+    color: var(--text-secondary);
+    font-size: 0.85em;
+    text-align: right;
+    box-sizing: border-box;
+    -moz-appearance: textfield; /* Remove spinners in Firefox */
+    appearance: textfield;
+    flex-shrink: 0;
+}
+
+.slider-container .value-input::-webkit-outer-spin-button,
+.slider-container .value-input::-webkit-inner-spin-button {
+    -webkit-appearance: none; /* Remove spinners in Chrome/Safari/Edge */
+    margin: 0;
+}
+
+.slider-container .unit-display {
+    font-size: 0.9em;
+    color: var(--text-tertiary);
+    margin-left: 3px;
+    user-select: none;
+    flex-shrink: 0;
+    width: 10px; /* Adjusted for ° symbol */
+    text-align: left;
+}
+
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: var(--slider-track-height);
+    padding: 0;
+    border-radius: var(--global-border-radius);
+    outline: none;
+    opacity: 0.9;
+    transition: opacity 0.6s;
+    border: 1px solid var(--border-color-input-range);
+    box-sizing: border-box;
+    background-color: var(--bg-slider-track);
+}
+
+input[type="range"]:hover {
+    opacity: 1;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: var(--slider-thumb-width);
+    height: var(--slider-thumb-height);
+    background: var(--slider-thumb-bg-color); /* Dynamic background */
+    border-radius: var(--slider-thumb-border-radius); /* Rectangular shape */
+    cursor: pointer;
+    border: 2px solid var(--slider-thumb-border-color); /* Dynamic border color */
+    box-shadow: 0 0 6px var(--shadow-default);
+    /* Adjusted margin-top for vertical centering of the TALLER thumb */
+    margin-top: calc((var(--slider-thumb-height) - (var(--slider-track-height) - 2 * 1px)) / -2);
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: var(--slider-thumb-width);
+    height: var(--slider-thumb-height);
+    background: var(--slider-thumb-bg-color); /* Dynamic background */
+    border-radius: var(--slider-thumb-border-radius); /* Rectangular shape */
+    cursor: pointer;
+    border: 2px solid var(--slider-thumb-border-color); /* Dynamic border color */
+    box-shadow: 0 0 6px var(--shadow-default);
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+/* Common styles for Hue, Saturation, Lightness slider tracks (gradients) */
+#hue,
+#saturation.dynamic-gradient-slider,
+#lightness.dynamic-gradient-slider {
+    background-origin: border-box;
+    background-position: center center;
+    background-size: 100% 100%;
+    background-clip: content-box;
+    background-repeat: no-repeat;
+}
+
+/* Static background for Hue slider */
+#hue {
+    background-image: linear-gradient(to right, hsl(0, 100%, 50%), hsl(30, 100%, 50%), hsl(60, 100%, 50%), hsl(90, 100%, 50%), hsl(120, 100%, 50%), hsl(150, 100%, 50%), hsl(180, 100%, 50%), hsl(210, 100%, 50%), hsl(240, 100%, 50%), hsl(270, 100%, 50%), hsl(300, 100%, 50%), hsl(330, 100%, 50%), hsl(360, 100%, 50%));
+}
+
+/* Opacity slider background is fully managed by JS due to layering checkerboard and gradient */
+
+/* ==========================================================================
+    8. Color Output Display Panel
+   ========================================================================== */
+
+#colorOutput {
+    background-color: var(--bg-output-panel);
+    border-radius: var(--global-border-radius);
+    color: var(--text-tertiary);
+    display: flex;
+    flex-direction: column;
+    font-size: 0.9em;
+    gap: 8px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10px;
+    padding: 15px 20px;
+    width: fit-content;
+    min-width: 380px;
+    box-sizing: border-box;
+}
+
+.output-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-start;
+}
+
+.output-line strong {
+    color: var(--text-default);
+    font-weight: 600;
+    width: 60px; /* Consistent label width */
+    flex-shrink: 0; /* Prevent label from shrinking */
+}
+
+.output-line span {
+    font-family: "Source Code Pro", Consolas, "Courier New", Courier, monospace;
+    flex-grow: 1; /* Allow value to take available space */
+    min-width: 100px; /* Minimum space for value before wrapping */
+    word-break: break-all; /* Break long color strings */
+    margin-right: 5px; /* Spacing before copy button */
+    text-align: left;
+}
+
+#colorOutput .copy-btn {
+    /* Specifics for copy buttons in output panel */
+    padding: 4px;
+    font-size: 1em; /* Relative to parent #colorOutput's font-size */
+    line-height: 1;
+    width: 28px; /* Square button */
+    height: 28px; /* Square button */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    /* Animated button properties are inherited if class is also present */
+}
+
+#colorOutput .copy-btn svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+    transition: fill 0.6s ease-in-out;
+}
+
+#colorOutput .copy-btn.copied-success svg {
+    fill: hsl(120, 70%, 60%) !important;
+}
+#colorOutput .copy-btn.copied-fail svg {
+    fill: hsl(0, 70%, 60%) !important;
+}
+
+#colorOutput .copy-btn:disabled svg {
+    opacity: 0.5;
+}
+
+#colorOutput .copy-btn:hover:not(:disabled) {
+    filter: brightness(1.25);
+}
