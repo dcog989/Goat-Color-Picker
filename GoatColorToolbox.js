@@ -7,8 +7,8 @@
  * @license MIT
  * @author Chase McGoat
  * @createdAt 2025-04-20
- * @lastModified 2025-06-03
- * @version 1.3.1
+ * @lastModified 2025-06-09
+ * @version 1.3.2
  */
 
 (function (global, factory) {
@@ -425,10 +425,30 @@
             }
         }
 
-        _getAlphaString() {
+        /**
+         * Generates a string representation of the alpha value, respecting the original input style and legacy format requirements.
+         * For modern syntax, it may produce a percentage (e.g., "50%") or a number (e.g., ".5").
+         * For legacy syntax, it produces a number (e.g., "0.5").
+         * Handles edge cases like 0, 1, and rounding.
+         * @private
+         * @param {boolean} [legacy=false] - If true, formats the alpha for legacy comma-separated syntaxes (e.g., `rgba(r,g,b,a)`).
+         * @returns {string} The formatted alpha string.
+         */
+        _getAlphaString(legacy = false) {
             const alpha = this.a;
             const epsilon = 1e-9;
 
+            if (legacy) {
+                if (Math.abs(alpha - 1) < epsilon) return "1";
+
+                let legacyA = round(alpha, 2).toString();
+                if (legacyA === "0.00") return "0";
+                if (legacyA === "1.00") return "1";
+                if (legacyA.startsWith("0.")) return legacyA.substring(1);
+                return legacyA;
+            }
+
+            // Modern syntax
             if (Math.abs(alpha - 1) < epsilon) return "1";
             if (Math.abs(alpha - 0) < epsilon) return "0";
 
@@ -441,7 +461,6 @@
             }
             return `${round(alpha * 100, 0)}%`;
         }
-
 
         /**
          * Gets the color as an RGB object.
@@ -482,16 +501,11 @@
             if (!this.valid) return this.error || "Invalid Color";
             const { r, g, b } = this.toRgb();
             if (legacy) {
-                let legacyA = round(this.a, 2).toString();
-                if (legacyA === "0.00") legacyA = "0";
-                else if (legacyA === "1.00") legacyA = "1";
-                else if (legacyA.startsWith("0.")) legacyA = legacyA.substring(1);
-                return `rgba(${r}, ${g}, ${b}, ${legacyA})`;
+                return `rgba(${r}, ${g}, ${b}, ${this._getAlphaString(true)})`;
             }
             // Modern space-separated syntax
             if (this.a === 1) return `rgb(${r} ${g} ${b})`;
-            const aStr = this._getAlphaString();
-            return `rgb(${r} ${g} ${b} / ${aStr})`;
+            return `rgb(${r} ${g} ${b} / ${this._getAlphaString(false)})`;
         }
 
         /**
@@ -600,16 +614,11 @@
             const { h, s, l } = this.toHsl();
             const hS = round(h, 0), sS = round(s, 0), lS = round(l, 0);
             if (legacy) {
-                let legacyA = round(this.a, 2).toString();
-                if (legacyA === "0.00") legacyA = "0";
-                else if (legacyA === "1.00") legacyA = "1";
-                else if (legacyA.startsWith("0.")) legacyA = legacyA.substring(1);
-                return `hsla(${hS}, ${sS}%, ${lS}%, ${legacyA})`;
+                return `hsla(${hS}, ${sS}%, ${lS}%, ${this._getAlphaString(true)})`;
             }
             // Modern space-separated syntax
             if (this.a === 1) return `hsl(${hS} ${sS}% ${lS}%)`;
-            const aStr = this._getAlphaString();
-            return `hsl(${hS} ${sS}% ${lS}% / ${aStr})`;
+            return `hsl(${hS} ${sS}% ${lS}% / ${this._getAlphaString(false)})`;
         }
 
         /**
@@ -756,18 +765,15 @@
         }
 
         /**
-         * Generates a monochromatic palette.
-         * @param {number} [count=5] - The number of colors in the palette (including the base color).
-         * @returns {GoatColorInternal[]} An array of GoatColorInternal instances.
-         */
-        getMonochromaticPalette(count = 5) {
+                 * Generates a monochromatic palette.
+                 * @param {number} [count=5] - The number of colors in the palette (including the base color).
+                 * @param {number} [lightenFactor=0.8] - Controls how much lighter the light shades are. Closer to 1.0 is lighter.
+                 * @param {number} [darkenFactor=0.85] - Controls how much darker the dark shades are. Closer to 1.0 is darker.
+                 * @returns {GoatColorInternal[]} An array of GoatColorInternal instances.
+                 */
+        getMonochromaticPalette(count = 5, lightenFactor = 0.8, darkenFactor = 0.85) {
             if (!this.valid || count < 1) return [this];
             if (count === 1) return [this];
-
-            // Factor for how much to lighten; values closer to 1.0 lighten more per step.
-            const LIGHTEN_FACTOR_MONO = 0.8;
-            // Factor for how much to darken (applied to remaining lightness); values closer to 1.0 darken more per step.
-            const DARKEN_FACTOR_MONO = 0.85;
 
             const { h, s, l: baseL } = this.toHsl();
             const p = [this];
@@ -781,11 +787,11 @@
             const darkerColorsCount = Math.floor((count - 1) / 2);
 
             for (let i = 1; i <= lighterColorsCount; i++) {
-                const lightness = clamp(baseL + (100 - baseL) * (i / (lighterColorsCount + 1)) * LIGHTEN_FACTOR_MONO, 0, 100);
+                const lightness = clamp(baseL + (100 - baseL) * (i / (lighterColorsCount + 1)) * lightenFactor, 0, 100);
                 p.push(this._cloneWithNewHsl(h, s, lightness));
             }
             for (let i = 1; i <= darkerColorsCount; i++) {
-                const lightness = clamp(baseL * (1 - (i / (darkerColorsCount + 1)) * DARKEN_FACTOR_MONO), 0, 100);
+                const lightness = clamp(baseL * (1 - (i / (darkerColorsCount + 1)) * darkenFactor), 0, 100);
                 p.push(this._cloneWithNewHsl(h, s, lightness));
             }
             return p.sort((c1, c2) => c1.toHsl().l - c2.toHsl().l);
@@ -866,7 +872,7 @@
          * Flattens the color against a background color, removing transparency.
          * @param {string|GoatColorInternal} [backgroundInput="white"] - The background color.
          * @returns {GoatColorInternal} A new GoatColorInternal instance representing the flattened color (alpha will be 1).
-         * If the current color is invalid, returns a new invalid color instance.
+         * If the current color or the background color is invalid, returns a new invalid color instance.
          */
         flatten(backgroundInput = "white") {
             if (!this.valid) {
@@ -880,7 +886,9 @@
 
             let bgInstance = backgroundInput instanceof GoatColorInternal ? backgroundInput : new GoatColorInternal(backgroundInput);
             if (!bgInstance.isValid()) {
-                bgInstance = new GoatColorInternal("white");
+                const invalidColor = new GoatColorInternal(null);
+                invalidColor.error = "Cannot flatten against an invalid background color.";
+                return invalidColor;
             }
 
             if (bgInstance.a < 1) {
